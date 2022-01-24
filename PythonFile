@@ -1,0 +1,31 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Jan 20 10:28:44 2022
+
+@author: PotterHead2202
+"""
+
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+
+URL = 'https://basketball.realgm.com/nba/stats/2022/Averages/Qualified/points/All/desc/1/Last_5_Games'
+
+response = requests.get(URL)
+soup = BeautifulSoup(response.content, 'html.parser')
+
+columns = ['Number','Player Name', 'Team', 'Games Played', 'Minutes Per Game', 'Field Goals Made', 'Field Goals Attempted',
+            'FG%','3PM', '3PA','3P%','Free Throws Made','Free Throws Attempted', 'FT%','Turnovers','Personal Fouls',
+            'ORB','DRB','RPG','APG','SPG','BPG','PPG']
+
+df = pd.DataFrame(columns=columns)
+
+table = soup.find('table', attrs={'class':'tablesaw','data-tablesaw-mode':'swipe'}).tbody
+trs = table.find_all('tr')
+for tr in trs:
+    tds = tr.find_all('td')
+    row = [td.text.replace('\n','') for td in tds]
+    df = df.append(pd.Series(row, index=columns), ignore_index=True)
+    
+df.to_csv('nba season stats last 5.csv', index=False)
+                         
